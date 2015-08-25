@@ -10,4 +10,7 @@
 
 @interface ALHighScoresTableViewCell : UITableViewCell
 
+@property (weak, nonatomic) IBOutlet UILabel *playerNameLable;
+@property (weak, nonatomic) IBOutlet UILabel *scoreLable;
+
 @end

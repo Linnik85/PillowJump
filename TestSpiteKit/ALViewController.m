@@ -1,6 +1,6 @@
 //
 //  ALViewController.m
-//  TestSpiteKit
+//  PillowJump
 //
 //  Created by Линник Александр on 02.03.14.
 //  Copyright (c) 2014 Alex Linnik. All rights reserved.
@@ -8,6 +8,7 @@
 
 #import "ALViewController.h"
 #import "ALMyScene.h"
+#import "ALStartScene.h"
 
 @implementation ALViewController
 
@@ -17,11 +18,11 @@
 
     // Configure the view.
     SKView * skView = (SKView *)self.view;
-    skView.showsFPS = YES;
-    skView.showsNodeCount = YES;
+    //skView.showsFPS = YES;
+    //skView.showsNodeCount = YES;
     
     // Create and configure the scene.
-    SKScene * scene = [ALMyScene sceneWithSize:skView.bounds.size];
+    SKScene * scene = [ALStartScene sceneWithSize:skView.bounds.size];
     scene.scaleMode = SKSceneScaleModeAspectFill;
     
     // Present the scene.

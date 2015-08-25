@@ -1,6 +1,6 @@
 //
 //  ALViewController.h
-//  TestSpiteKit
+//  PillowJump
 //
 
 //  Copyright (c) 2014 Alex Linnik. All rights reserved.

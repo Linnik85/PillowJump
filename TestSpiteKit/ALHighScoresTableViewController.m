@@ -7,8 +7,13 @@
 //
 
 #import "ALHighScoresTableViewController.h"
+#import <CoreData/CoreData.h>
+#import "ALHighScoresTableViewCell.h"
+#import "ALPlayer.h"
 
 @interface ALHighScoresTableViewController ()
+
+@property (strong, nonatomic) NSMutableArray* players;
 
 @end
 
@@ -27,93 +32,153 @@
 {
     [super viewDidLoad];
     
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
+    UILabel* labelNavigationItem = [[UILabel alloc] initWithFrame:CGRectMake(0,0, 320, 44)];
+    labelNavigationItem.backgroundColor = [UIColor clearColor];
+    labelNavigationItem.font = [UIFont fontWithName:@"Times New Roman" size:24];
+    labelNavigationItem.textAlignment = NSTextAlignmentCenter;
+    labelNavigationItem.textColor = [UIColor colorWithRed:0/255.0f green:102/255.0f blue:51/255.0f alpha:1.0f];
+    labelNavigationItem.text = @"High Score";
     
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-}
+    self.navigationItem.titleView =labelNavigationItem;
+    
+    UIImage* background = [UIImage imageNamed:@"settingsBackground"];
+    UIImageView* image = [[UIImageView alloc]initWithImage:background];
+    self.tableView.backgroundView = image;
+
+    [self getData];
+        }
+
+-(void)viewDidAppear:(BOOL)animated{
+    
+    [super viewDidAppear:animated];
+    
+    }
+
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
+
 
 #pragma mark - Table view data source
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
-#warning Potentially incomplete method implementation.
-    // Return the number of sections.
-    return 0;
-}
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+
 {
-#warning Incomplete method implementation.
-    // Return the number of rows in the section.
-    return 0;
+    [self getData];
+    return [self.players count];
 }
 
-/*
+
+ 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#@"reuseIdentifier"#> forIndexPath:indexPath];
+    static NSString *CellIdentifier = @"highScoresCell";
     
-    // Configure the cell...
+   
     
+    if (self.players.count != 0) {
+        
+    
+    ALHighScoresTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
+    
+    ALPlayer* player = [self.players objectAtIndex:indexPath.row];
+
+    cell.playerNameLable.text =[NSString stringWithFormat:@"%ld. %@ ",(long)indexPath.row+1,player.name] ;
+    cell.scoreLable.text = [NSString stringWithFormat:@"Score: %@",player.score];
     return cell;
+    }
+    return nil;
 }
-*/
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
+
+
+- (NSManagedObjectContext *)managedObjectContext
 {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
+    NSManagedObjectContext *context = nil;
+    id delegate = [[UIApplication sharedApplication] delegate];
+    if ([delegate performSelector:@selector(managedObjectContext)]) {
+        context = [delegate managedObjectContext];
+    }
+    return context;
 }
-*/
 
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
+
+#pragma  mark Actions
+
+
+- (IBAction)cancelButton:(UIBarButtonItem *)sender {
+    
+    [self dismissViewControllerAnimated:YES completion:nil];
+    
 }
-*/
 
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-{
+- (IBAction)resetButton:(UIBarButtonItem *)sender {
+    
+    UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Delete all?"
+                                                   message:nil
+                                                   delegate:self
+                                                   cancelButtonTitle:@"No"
+                                                   otherButtonTitles:@"YES", nil];
+    [alert show];
+    
+   
 }
-*/
 
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
+
+#pragma mark Core Data
+
+
+-(void) deleteAllObjects {
+    
+     NSManagedObjectContext* managedObjectContext = [self managedObjectContext];
+     
+     for (id player in self.players){
+     
+     [managedObjectContext deleteObject:player];
+     }
+     [self.managedObjectContext save:nil];
+     
+     [self.tableView reloadData];
 }
-*/
 
-/*
-#pragma mark - Navigation
 
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+-(void) getData {
+    
+    NSManagedObjectContext* managedObjectContext = [self managedObjectContext];
+    NSFetchRequest* fetchRequest = [[NSFetchRequest alloc]init];
+    
+    
+    
+    NSEntityDescription* description =
+    [NSEntityDescription entityForName:@"ALPlayer"
+                inManagedObjectContext:managedObjectContext];
+    
+    [fetchRequest setEntity:description];
+    
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"score" ascending:NO];
+    NSArray *sortDescriptors = @[sortDescriptor];
+    [fetchRequest setSortDescriptors:sortDescriptors];
+    
+    
+    NSError* requestError = nil;
+    self.players = [[self.managedObjectContext executeFetchRequest:fetchRequest error:&requestError]mutableCopy];
+ 
+    
 }
-*/
+
+#pragma mark UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+    
+    NSString* title = [alertView buttonTitleAtIndex:buttonIndex];
+    
+    if ([title isEqualToString:@"YES"]) {
+        
+        [self deleteAllObjects];
+    }
+}
 
 @end

@@ -8,6 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ALHighScoresTableViewController : UITableViewController
+@interface ALHighScoresTableViewController : UITableViewController <UIAlertViewDelegate>
+
+- (IBAction)cancelButton:(UIBarButtonItem *)sender;
+- (IBAction)resetButton:(UIBarButtonItem *)sender;
 
 @end
